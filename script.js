@@ -1,38 +1,40 @@
 const inquirer = require("inquirer");
 const axios = require("axios");
 
-const url = "https://opentdb.com/api.php?amount=10&category=9&difficulty=easy&type=boolean";
+const url = "https://opentdb.com/api.php?amount=10&category=9&type=boolean";
 
-axios.get(url)
-  .then(function (response) {
+const main = async () => {
+  try {
+    const response = await axios.get(url);
+
     let correct = 0;
-    let questionsIdx = 0;
 
     const questions = response.data.results;
-    const question = questions[questionsIdx];
 
-    inquirer
-      .prompt([
+    for (let i = 0; i < questions.length; i++) {
+      const currentQuestion = questions[i];
+
+      const reply = await inquirer.prompt([
         {
           type: 'list',
-          name: 'question',
-          message: question.question,
+          name: 'answer',
+          message: currentQuestion.question,
           choices: ['True', 'False']
         }
-      ])
-      .then(answers => {
-        if (answers.question === question.correct_answer) {
-          correct += 1;
-          console.log("Correct!");
-        } else {
-          console.log("Incorrect :(");
-        }
-        console.log(`You've gotten ${correct} correct answers out of ${questions.length}!`);
-      })
-      .catch(error => {
-        console.log(error)
-      });
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
+      ]);
+
+      if (reply.answer === currentQuestion.correct_answer) {
+        correct += 1;
+        console.log("Correct!");
+      } else {
+        console.log("Incorrect!");
+      }
+    }
+
+    console.log(`You got ${correct} answers correct out of ${questions.length}!`);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+main();
